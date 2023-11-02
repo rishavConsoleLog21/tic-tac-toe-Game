@@ -3,6 +3,7 @@ import Players from "./components/Players";
 import GameBoard from "./components/GameBoard";
 import Log from "./components/Log";
 import { winningCombinaton } from "./winningCombination.js";
+import GameOver from "./components/GameOver.jsx";
 
 const initialGameBoard = [
   [null, null, null],
@@ -24,7 +25,7 @@ function App() {
 
   const activePlayer = deriveActivePlayer(gameTurns);
 
-  let gameBoard = initialGameBoard;
+  let gameBoard = [...initialGameBoard.map((array) => [...array])];
   for (let turn of gameTurns) {
     const { square, player } = turn;
     const { row, col } = square;
@@ -34,9 +35,12 @@ function App() {
   let winner;
 
   for (let combination of winningCombinaton) {
-    const firstSquareSymbol = gameBoard[combination[0].row][combination[0].column];
-    const secondSquareSymbol = gameBoard[combination[1].row][combination[1].column];
-    const thirdSquareSymbol = gameBoard[combination[2].row][combination[2].column];
+    const firstSquareSymbol =
+      gameBoard[combination[0].row][combination[0].column];
+    const secondSquareSymbol =
+      gameBoard[combination[1].row][combination[1].column];
+    const thirdSquareSymbol =
+      gameBoard[combination[2].row][combination[2].column];
 
     if (
       firstSquareSymbol &&
@@ -46,6 +50,8 @@ function App() {
       winner = firstSquareSymbol;
     }
   }
+
+  const hasDraw = gameTurns.length === 9 && !winner;
 
   function handleSelectPlayer(rowIndex, cellIndex) {
     // setActivePlayer((curActivePlayer) => (curActivePlayer === "X" ? "O" : "X"));
@@ -58,6 +64,10 @@ function App() {
       ];
       return updatedTurns;
     });
+  }
+
+  function handleResetGame() {
+    setGameTurns([]);
   }
 
   return (
@@ -75,7 +85,9 @@ function App() {
             isActive={activePlayer === "O"}
           />
         </ol>
-        {winner && <p>You won, {winner}</p>}
+        {(winner || hasDraw) && (
+          <GameOver winner={winner} onRestart={handleResetGame} />
+        )}
         <GameBoard onSelectSquare={handleSelectPlayer} board={gameBoard} />
       </div>
       <Log turns={gameTurns} />
